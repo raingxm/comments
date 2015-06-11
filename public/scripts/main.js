@@ -1,13 +1,34 @@
-var HelloWorld = React.createClass({
+var CommentList = React.createClass({
     render: function() {
         return (
-            <p>Hello, please input your name here:
-                <input type="text" placeholder="your name" /> !
-                It is {this.props.date.toTimeString()}.
-            </p>);
+            <div className="commentList">
+                Hello, world! I am a CommentList.
+            </div>
+        );
     }
 });
 
-setInterval(function() {
-    React.render(<HelloWorld date={new Date()} />, document.getElementById('content'));
-}, 500);
+var CommentForm = React.createClass({
+    render: function() {
+        return (
+            <div className="commentForm">
+                Hello, world! I am a CommentForm.
+            </div>
+        );
+    }
+});
+
+var CommentBox = React.createClass({
+    render: function() {
+        return (
+            <div className="commentBox">
+                <h1>Comments</h1>
+                <CommentList />
+                <CommentForm />
+            </div>
+        );
+    }
+});
+
+React.render(<CommentBox />, document.getElementById('content'));
+
