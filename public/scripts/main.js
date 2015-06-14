@@ -1,11 +1,12 @@
 var Comment = React.createClass({
     render: function() {
+        var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
         return (
             <div className="comment">
                 <h2 className="commentAuthor">
                     {this.props.author}
                 </h2>
-                {this.props.children}
+                <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
             </div>
         );
     }
@@ -13,10 +14,14 @@ var Comment = React.createClass({
 
 var CommentList = React.createClass({
     render: function() {
+        var commentNodes = this.props.data.map(function(comment) {
+            return (
+                <Comment author={comment.author}>{comment.text}</Comment>
+            );
+        });
         return (
             <div className="commentList">
-                <Comment author="raingxm">Happyniess journey</Comment>
-                <Comment author="David">Seven ways to have a better life</Comment>
+                {commentNodes}
             </div>
         );
     }
@@ -33,16 +38,37 @@ var CommentForm = React.createClass({
 });
 
 var CommentBox = React.createClass({
+    loadDataFromServer: function() {
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            cached: false,
+            success: function(data) {
+                this.setState({data: data});
+            }.bind(this),
+            error: function(xhr, status, error) {
+                console.error(this.props.url, status, error.toString());
+            }.bind(this)
+        });
+    },
+
+    getInitialState: function() {
+        return {data: []};
+    },
+    componentDidMount: function() {
+        this.loadDataFromServer();
+        setInterval(this.loadDataFromServer, 1000);
+    },
     render: function() {
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
-                <CommentList />
+                <CommentList data={this.state.data} />
                 <CommentForm />
             </div>
         );
     }
 });
 
-React.render(<CommentBox />, document.getElementById('content'));
+React.render(<CommentBox url='comments.json' />, document.getElementById('content'));
 
