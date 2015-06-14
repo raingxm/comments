@@ -57,7 +57,7 @@ var CommentBox = React.createClass({
     },
     componentDidMount: function() {
         this.loadDataFromServer();
-        setInterval(this.loadDataFromServer, 1000);
+        setInterval(this.loadDataFromServer, this.props.syncInterval);
     },
     render: function() {
         return (
@@ -70,5 +70,5 @@ var CommentBox = React.createClass({
     }
 });
 
-React.render(<CommentBox url='comments.json' />, document.getElementById('content'));
+React.render(<CommentBox url='comments.json' syncInterval={2000} />, document.getElementById('content'));
 
