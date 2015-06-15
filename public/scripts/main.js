@@ -28,11 +28,26 @@ var CommentList = React.createClass({
 });
 
 var CommentForm = React.createClass({
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var author = React.findDOMNode(this.refs.author).value.trim();
+        var text = React.findDOMNode(this.refs.text).value.trim();
+        if(!author || !text) {
+            return;
+        }
+
+        this.props.onSubmitComment({author: author, text: text});
+        React.findDOMNode(this.refs.author).value = '';
+        React.findDOMNode(this.refs.text).value = '';
+        return;
+    },
     render: function() {
         return (
-            <div className="commentForm">
-                Hello, world! I am a CommentForm.
-            </div>
+            <form className="commentForm" onSubmit={this.handleSubmit}>
+                <input type='text' placeholder='your name' ref='author' /><br/>
+                <input type='text' placeholder='comment here' ref='text' /><br/>
+                <input type='submit' value='post' />
+            </form>
         );
     }
 });
@@ -42,6 +57,7 @@ var CommentBox = React.createClass({
         $.ajax({
             url: this.props.url,
             dataType: 'json',
+            type: 'GET',
             cached: false,
             success: function(data) {
                 this.setState({data: data});
@@ -51,7 +67,24 @@ var CommentBox = React.createClass({
             }.bind(this)
         });
     },
+    handleSubmit: function(comment) {
+        var comments = this.state.data;
+        var newComments = comments.concat(comment);
+        this.setState(newComments);
 
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            type: 'POST',
+            data: comment,
+            success: function(data) {
+                this.setState({data: data});
+            }.bind(this),
+            error: function(xhr, status, error) {
+                console.error(this.props.url, status, error.toString());
+            }.bind(this)
+        });
+    },
     getInitialState: function() {
         return {data: []};
     },
@@ -64,11 +97,13 @@ var CommentBox = React.createClass({
             <div className="commentBox">
                 <h1>Comments</h1>
                 <CommentList data={this.state.data} />
-                <CommentForm />
+                <hr/>
+                <CommentForm onSubmitComment={this.handleSubmit} />
             </div>
         );
     }
 });
 
-React.render(<CommentBox url='comments.json' syncInterval={2000} />, document.getElementById('content'));
+React.render(<CommentBox url='comments.json' syncInterval={2000} />,
+    document.getElementById('content'));
 
